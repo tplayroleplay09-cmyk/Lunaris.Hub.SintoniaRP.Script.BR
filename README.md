@@ -1,5 +1,5 @@
 -- Lunaris Hub - Script para Sintonia Roleplay
--- Versão SPEED 15 STUDS + AIMBOT 4D ORBITAL + AIMBOT SUPREMO
+-- Versão SPEED 15 STUDS + AIMBOT 4D + AIMBOT SUPREMO
 -- Criado com Interface Lunaris
 
 local Lunaris = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -180,9 +180,9 @@ Lunaris:Notify({
 local noclipEnabled = false
 local noclipConnection = nil
 local speedEnabled = false
-local speedValue = 0 -- 0 = normal, 1-15 = studs extra
+local speedValue = 0
 local speedConnection = nil
-local originalWalkSpeed = 16 -- Velocidade padrão do Roblox
+local originalWalkSpeed = 16
 local espEnabled = false
 local espConnections = {}
 local espLines = {}
@@ -193,23 +193,21 @@ local staffEspEnabled = false
 local staffEspConnections = {}
 local staffEspLines = {}
 
--- Variáveis Aimbot Supremo (travamento forte)
+-- Variáveis Aimbot Supremo
 local aimbotEnabled = false
 local aimbotConnection = nil
 local aimbotFov = 150
-local aimbotStrength = 5 -- 1 a 10, quanto maior mais puxa
+local aimbotStrength = 5
 local fovCircle = nil
 local fovColor = Color3.fromRGB(180, 130, 255)
 local fovVisible = true
 
--- Variáveis Aimbot 4D (movimento orbital suave)
+-- Variáveis Aimbot 4D
 local aimbot4DEnabled = false
 local aimbot4DConnection = nil
 local aimbot4DFov = 200
-local aimbot4DSpeed = 3 -- Velocidade da órbita (1-10)
-local aimbot4DRadius = 1.5 -- Raio da órbita em studs (0.5-5)
 local aimbot4DFovCircle = nil
-local aimbot4DColor = Color3.fromRGB(255, 100, 255) -- Rosa
+local aimbot4DColor = Color3.fromRGB(255, 100, 255)
 local aimbot4DFovVisible = true
 local aimbot4DTime = 0
 
@@ -280,7 +278,7 @@ local speedToggle = PlayerTab:CreateToggle({
     end
 })
 
--- Speed Slider (0 a 15 studs)
+-- Speed Slider
 local speedSlider = PlayerTab:CreateSlider({
     Name = "📊 Velocidade Extra (studs)",
     Range = {0, 15},
@@ -291,7 +289,6 @@ local speedSlider = PlayerTab:CreateSlider({
     Callback = function(Value)
         speedValue = Value
         if speedEnabled then
-            -- Atualizar velocidade em tempo real
             local player = game.Players.LocalPlayer
             if player and player.Character then
                 local humanoid = player.Character:FindFirstChild("Humanoid")
@@ -352,7 +349,6 @@ local aimbotToggle = CombatTab:CreateToggle({
     CurrentValue = false,
     Flag = "AimbotToggle",
     Callback = function(Value)
-        -- Desativar o outro aimbot se este for ativado
         if Value and aimbot4DEnabled then
             aimbot4DEnabled = false
             if aimbot4DConnection then
@@ -446,7 +442,7 @@ CombatTab:CreateColorPicker({
     end
 })
 
--- Slider de Força do Aimbot Supremo (1 a 10)
+-- Slider de Força do Aimbot Supremo
 CombatTab:CreateSlider({
     Name = "💪 Força do Aimbot SUPREMO (10 = TRAVA)",
     Range = {1, 10},
@@ -468,9 +464,9 @@ CombatTab:CreateSlider({
 CombatTab:CreateDivider()
 
 -- ============================================
--- AIMBOT 4D ORBITAL SUAVE (ANTI-DETECT)
+-- AIMBOT 4D - VAI E VEM RÁPIDO (PUUXA FORTE)
 -- ============================================
-local Combat4DSection = CombatTab:CreateSection("🌀 Aimbot 4D Orbital (ANTI-DETECT)")
+local Combat4DSection = CombatTab:CreateSection("🌀 Aimbot 4D (VAI E VEM RÁPIDO)")
 
 -- Função para criar círculo FOV do Aimbot 4D
 local function createAimbot4DFovCircle()
@@ -504,11 +500,10 @@ end
 
 -- Aimbot 4D Toggle
 local aimbot4DToggle = CombatTab:CreateToggle({
-    Name = "🌀 Ativar Aimbot 4D Orbital (ANTI-DETECT)",
+    Name = "🌀 Ativar Aimbot 4D (VAI E VEM RÁPIDO)",
     CurrentValue = false,
     Flag = "Aimbot4DToggle",
     Callback = function(Value)
-        -- Desativar o outro aimbot se este for ativado
         if Value and aimbotEnabled then
             aimbotEnabled = false
             if aimbotConnection then
@@ -522,7 +517,7 @@ local aimbot4DToggle = CombatTab:CreateToggle({
             end
             Lunaris:Notify({
                 Title = "⚔️ Combate",
-                Content = "Aimbot Supremo desativado (ativou 4D Orbital)",
+                Content = "Aimbot Supremo desativado (ativou 4D Rápido)",
                 Duration = 2,
                 Image = "target"
             })
@@ -536,8 +531,8 @@ local aimbot4DToggle = CombatTab:CreateToggle({
             end
             Lunaris:Notify({
                 Title = "🌀 Aimbot 4D",
-                Content = "Aimbot Orbital ativado! Movimento suave em torno da cabeça",
-                Duration = 3,
+                Content = "Aimbot 4D RÁPIDO ativado! Puxa FORTE na cabeça + vai e vem",
+                Duration = 4,
                 Image = "move"
             })
         else
@@ -602,36 +597,10 @@ CombatTab:CreateColorPicker({
     end
 })
 
--- Velocidade da órbita
-CombatTab:CreateSlider({
-    Name = "⚡ Velocidade da Órbita",
-    Range = {1, 10},
-    Increment = 1,
-    Suffix = "",
-    CurrentValue = 3,
-    Flag = "Aimbot4DSpeed",
-    Callback = function(Value)
-        aimbot4DSpeed = Value
-    end
-})
-
--- Raio da órbita (em studs)
-CombatTab:CreateSlider({
-    Name = "📐 Raio da Órbita (studs)",
-    Range = {0.5, 5},
-    Increment = 0.5,
-    Suffix = " studs",
-    CurrentValue = 1.5,
-    Flag = "Aimbot4DRadius",
-    Callback = function(Value)
-        aimbot4DRadius = Value
-    end
-})
-
 -- Texto explicativo
 CombatTab:CreateParagraph({
-    Title = "ℹ️ Sobre o Aimbot 4D Orbital",
-    Content = "Movimento circular suave em torno da cabeça\n• Raio 0.5 = quase travado\n• Raio 1.5 = movimento sutil\n• Raio 3.0 = órbita visível\n• Velocidade controla a suavidade"
+    Title = "ℹ️ Sobre o Aimbot 4D RÁPIDO",
+    Content = "✓ SÓ AFETA OUTROS PLAYERS (nunca você)\n✓ DENTRO DO FOV: PUUXA FORTE na cabeça + vai e vem\n✓ FORA DO FOV: Câmera normal (você controla)\n✓ Velocidade: 4.0 (RÁPIDO)\n✓ Amplitude: 1.5 studs\n✓ Força: 0.7 (quase travado)\n✓ Cabeça → Direita → Cabeça → Esquerda → Cabeça"
 })
 
 CombatTab:CreateDivider()
@@ -794,7 +763,7 @@ MiscTab:CreateButton({
 -- ============================================
 CreditsTab:CreateParagraph({
     Title = "✨ Lunaris Hub",
-    Content = "Versão 11.0 - AIMBOT 4D ORBITAL!\n• Speed: 0-15 studs extra\n• Aimbot Supremo: Força 1-10 (TRAVA!)\n• Aimbot 4D Orbital: Movimento circular suave\n• ESP Staff Piscante\n• Noclip e muito mais!"
+    Content = "Versão 15.0 - AIMBOT 4D PERFEITO!\n• Speed: 0-15 studs extra\n• Aimbot Supremo: Força 1-10 (TRAVA!)\n• Aimbot 4D RÁPIDO:\n   • PUUXA FORTE na cabeça (0.7)\n   • Velocidade: 4.0 (RÁPIDO)\n   • Amplitude: 1.5 studs\n   • Cabeça → Direita → Cabeça → Esquerda → Cabeça\n• ESP Staff Piscante\n• Noclip e muito mais!"
 })
 
 -- ============================================
@@ -833,7 +802,7 @@ function stopNoclip()
     end
 end
 
--- Speed (até 15 studs)
+-- Speed
 function startSpeed()
     local player = game.Players.LocalPlayer
     
@@ -866,7 +835,7 @@ function stopSpeed()
     end
 end
 
--- AIMBOT SUPREMO - FORÇA REAL (1 = leve, 10 = TRAVA)
+-- AIMBOT SUPREMO
 function startAimbotWorking()
     aimbotConnection = game:GetService("RunService").RenderStepped:Connect(function()
         if not aimbotEnabled then return end
@@ -879,18 +848,15 @@ function startAimbotWorking()
         local closestHead = nil
         local shortestDistance = aimbotFov
         
-        -- Encontrar o alvo mais próximo do centro da tela
         for _, target in pairs(game.Players:GetPlayers()) do
             if target ~= player and target.Character then
                 local head = target.Character:FindFirstChild("Head")
                 local humanoid = target.Character:FindFirstChild("Humanoid")
                 
                 if head and humanoid and humanoid.Health > 0 then
-                    -- Verificar se o alvo está na tela
                     local headPos, onScreen = camera:WorldToViewportPoint(head.Position)
                     
                     if onScreen then
-                        -- Calcular distância do centro da tela
                         local distance = (centerScreen - Vector2.new(headPos.X, headPos.Y)).Magnitude
                         
                         if distance < shortestDistance then
@@ -903,101 +869,96 @@ function startAimbotWorking()
             end
         end
         
-        -- Mover a câmera com força baseada no slider (1-10)
         if closestTarget and closestHead then
             local headPos = closestHead.Position
             local cameraPos = camera.CFrame.Position
             
-            -- Calcular a direção para a cabeça do alvo
             local targetCFrame = CFrame.lookAt(cameraPos, headPos)
-            
-            -- Força real (1 = 0.1, 5 = 0.5, 10 = 1.0)
             local strength = aimbotStrength / 10
             
-            -- Se for 10, usar 1.0 para travar completamente
             if aimbotStrength == 10 then
                 strength = 1.0
             end
             
-            -- Interpolar entre a rotação atual e a rotação alvo
             camera.CFrame = camera.CFrame:Lerp(targetCFrame, strength)
         end
     end)
 end
 
--- AIMBOT 4D - MOVIMENTO ORBITAL SUAVE (ANTI-DETECT)
+-- AIMBOT 4D - VAI E VEM RÁPIDO (PUUXA FORTE NA CABEÇA)
 function startAimbot4D()
     aimbot4DTime = 0
+    local movementSpeed = 4.0 -- Velocidade RÁPIDA do movimento
+    local movementAmplitude = 1.5 -- Amplitude maior (1.5 studs)
     
     aimbot4DConnection = game:GetService("RunService").RenderStepped:Connect(function(dt)
         if not aimbot4DEnabled then return end
         
-        -- Atualizar tempo para animação suave
-        aimbot4DTime = aimbot4DTime + dt * (aimbot4DSpeed * 1.5)
+        -- Atualizar tempo RÁPIDO
+        aimbot4DTime = aimbot4DTime + dt * movementSpeed
         
         local player = game.Players.LocalPlayer
         local camera = workspace.CurrentCamera
         local viewportSize = camera.ViewportSize
         local centerScreen = Vector2.new(viewportSize.X / 2, viewportSize.Y / 2)
-        local closestTarget = nil
-        local closestHead = nil
-        local shortestDistance = aimbot4DFov
+        local targetInFov = false
+        local targetHead = nil
+        local targetPos = nil
         
-        -- Encontrar o alvo mais próximo do centro da tela
+        -- Verificar se tem algum player (DIFERENTE DE VOCÊ) dentro do FOV
         for _, target in pairs(game.Players:GetPlayers()) do
             if target ~= player and target.Character then
                 local head = target.Character:FindFirstChild("Head")
                 local humanoid = target.Character:FindFirstChild("Humanoid")
                 
                 if head and humanoid and humanoid.Health > 0 then
-                    -- Verificar se o alvo está na tela
                     local headPos, onScreen = camera:WorldToViewportPoint(head.Position)
                     
                     if onScreen then
-                        -- Calcular distância do centro da tela
                         local distance = (centerScreen - Vector2.new(headPos.X, headPos.Y)).Magnitude
                         
-                        if distance < shortestDistance then
-                            shortestDistance = distance
-                            closestTarget = target
-                            closestHead = head
+                        if distance <= aimbot4DFov then
+                            targetInFov = true
+                            targetHead = head
+                            targetPos = head.Position
+                            break
                         end
                     end
                 end
             end
         end
         
-        -- Aplicar movimento orbital suave em torno da cabeça
-        if closestTarget and closestHead then
-            local headPos = closestHead.Position
+        -- SE TEM ALVO NO FOV: PUUXA FORTE NA CABEÇA + VAI E VEM
+        if targetInFov and targetHead and targetPos then
             local cameraPos = camera.CFrame.Position
             
-            -- Calcular vetores de direção da câmera
-            local cameraDirection = (headPos - cameraPos).Unit
-            local cameraRight = camera.CFrame.RightVector
-            local cameraUp = camera.CFrame.UpVector
+            -- Calcular vetor direito da câmera
+            local targetRight = camera.CFrame.RightVector
             
-            -- Criar movimento orbital circular suave
-            -- Usando seno e cosseno para criar um círculo perfeito
-            local angle = aimbot4DTime
+            -- CRIAR MOVIMENTO DE VAI E VEM RÁPIDO
+            local offsetAmount = math.sin(aimbot4DTime) * movementAmplitude
             
-            -- Calcular offset orbital (círculo perfeito)
-            local offsetX = math.cos(angle) * aimbot4DRadius
-            local offsetY = math.sin(angle) * aimbot4DRadius * 0.5 -- Leve achatamento vertical para parecer mais natural
+            -- CICLO DO MOVIMENTO:
+            -- t=0:    offset=0    → NA CABEÇA
+            -- t=0.25: offset=1.5  → FORA (direita)
+            -- t=0.5:  offset=0    → NA CABEÇA
+            -- t=0.75: offset=-1.5 → FORA (esquerda)
+            -- t=1.0:  offset=0    → NA CABEÇA (repete)
             
-            -- Aplicar offset à posição da cabeça (órbita suave)
-            -- O movimento fica em um plano perpendicular à linha de visão
-            local targetPos = headPos + (cameraRight * offsetX) + (cameraUp * offsetY)
+            -- POSIÇÃO ALVO: cabeça + offset horizontal
+            local targetPosWithOffset = targetPos + (targetRight * offsetAmount)
             
-            -- Calcular a direção para a posição com offset
-            local targetCFrame = CFrame.lookAt(cameraPos, targetPos)
+            -- Calcular direção para o alvo
+            local targetCFrame = CFrame.lookAt(cameraPos, targetPosWithOffset)
             
-            -- Força de suavização (mais suave que aimbot normal)
-            -- Quanto menor, mais suave; quanto maior, mais rápido segue
-            local smoothness = 0.25 + (aimbot4DSpeed * 0.03) -- Entre 0.28 e 0.55
+            -- PUUXA FORTE: 0.7 de força (quase travado na cabeça)
+            local smoothness = 0.7 -- Isso faz PUUXAR FORTE na cabeça
             
-            -- Interpolar suavemente entre a rotação atual e a alvo
+            -- Aplicar o movimento FORTE
             camera.CFrame = camera.CFrame:Lerp(targetCFrame, smoothness)
+            
+        else
+            -- SE NÃO TEM ALVO: NÃO FAZ NADA (câmera normal)
         end
     end)
 end
@@ -1215,7 +1176,7 @@ setupMinimizeButton()
 print("✨ Lunaris Hub carregado com sucesso!")
 Lunaris:Notify({
     Title = "✨ Lunaris Hub ✨",
-    Content = "Menu carregado! Pressione K\nVersão 11.0 - AIMBOT 4D ORBITAL! 🚀",
+    Content = "Menu carregado! Pressione K\nVersão 15.0 - AIMBOT 4D PERFEITO! 🚀",
     Duration = 5,
     Image = "sparkles"
 })
