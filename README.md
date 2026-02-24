@@ -1,5 +1,5 @@
 -- Lunaris Hub - Script para Sintonia Roleplay
--- Versão SPEED 15 STUDS + AIMBOT 4D + AIMBOT SUPREMO
+-- Versão SPEED 15 STUDS + AIMBOT 4D + AIMBOT SUPREMO + CAIXINHA 2D COM RGB PARA STAFF
 -- Criado com Interface Lunaris
 
 local Lunaris = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -189,6 +189,8 @@ local espLines = {}
 local espLineColor = Color3.fromRGB(180, 130, 255)
 local espLineTransparency = 0.5
 local espLineThickness = 2
+
+-- Variáveis ESP Staff
 local staffEspEnabled = false
 local staffEspConnections = {}
 local staffEspLines = {}
@@ -210,6 +212,46 @@ local aimbot4DFovCircle = nil
 local aimbot4DColor = Color3.fromRGB(255, 100, 255)
 local aimbot4DFovVisible = true
 local aimbot4DTime = 0
+
+-- Variáveis Caixinha 2D
+local box2DEnabled = false
+local box2DColor = Color3.fromRGB(180, 130, 255)
+local box2DShowName = true
+local box2DObjects = {}
+local box2DConnections = {}
+
+-- Função para verificar se o player é STAFF (pelo nome ou time)
+local function isStaff(player)
+    -- Verificar pelo nome (contém STAFF)
+    if player.Name and string.find(player.Name:upper(), "STAFF") then
+        return true
+    end
+    if player.DisplayName and string.find(player.DisplayName:upper(), "STAFF") then
+        return true
+    end
+    
+    -- Verificar pelo time (Team)
+    if player.Team then
+        local teamName = player.Team.Name:upper()
+        if string.find(teamName, "STAFF") or string.find(teamName, "ADMIN") or string.find(teamName, "MOD") then
+            return true
+        end
+    end
+    
+    -- Verificar por tags no nome
+    local name = player.Name:upper()
+    local displayName = player.DisplayName:upper()
+    
+    local staffTags = {"STAFF", "ADMIN", "MOD", "OWNER", "FUNDADOR", "CRIADOR", "DEV", "DESENVOLVEDOR", "GERENTE", "SUPORTE"}
+    
+    for _, tag in ipairs(staffTags) do
+        if string.find(name, tag) or string.find(displayName, tag) then
+            return true
+        end
+    end
+    
+    return false
+end
 
 -- Criar abas
 local PlayerTab = Window:CreateTab("👤 Player", "user")
@@ -679,13 +721,334 @@ VisualTab:CreateSlider({
 VisualTab:CreateDivider()
 
 -- ============================================
--- ABA VISUAL - ESP STAFF PISCANTE
+-- ABA VISUAL - CAIXINHA 2D (ESP BOX)
 -- ============================================
-local StaffESPSection = VisualTab:CreateSection("👮 ESP Staff Piscante")
+local Box2DSection = VisualTab:CreateSection("📦 Caixinha 2D (ESP Box)")
+
+-- Função para criar a caixinha 2D
+local function createBox2D(player)
+    if player == game.Players.LocalPlayer then return end
+    
+    local rainbowColors = {
+        Color3.fromRGB(255, 0, 0),    -- Vermelho
+        Color3.fromRGB(255, 165, 0),  -- Laranja
+        Color3.fromRGB(255, 255, 0),  -- Amarelo
+        Color3.fromRGB(0, 255, 0),    -- Verde
+        Color3.fromRGB(0, 0, 255),    -- Azul
+        Color3.fromRGB(128, 0, 128),  -- Roxo
+        Color3.fromRGB(255, 192, 203) -- Rosa
+    }
+    
+    local colorIndex = 1
+    local lastUpdate = tick()
+    
+    local function updateBox()
+        if not box2DEnabled or not player.Character then
+            if box2DObjects[player] then
+                for _, obj in pairs(box2DObjects[player]) do
+                    if obj then obj:Destroy() end
+                end
+                box2DObjects[player] = nil
+            end
+            return
+        end
+        
+        local character = player.Character
+        local humanoid = character:FindFirstChild("Humanoid")
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        local head = character:FindFirstChild("Head")
+        
+        if not humanoid or not rootPart or not head or humanoid.Health <= 0 then
+            if box2DObjects[player] then
+                for _, obj in pairs(box2DObjects[player]) do
+                    if obj then obj:Destroy() end
+                end
+                box2DObjects[player] = nil
+            end
+            return
+        end
+        
+        local camera = workspace.CurrentCamera
+        local isStaffPlayer = isStaff(player)
+        
+        -- Atualizar cor RGB para staff
+        if isStaffPlayer and tick() - lastUpdate > 0.1 then
+            colorIndex = colorIndex + 1
+            if colorIndex > #rainbowColors then
+                colorIndex = 1
+            end
+            lastUpdate = tick()
+        end
+        
+        -- Posições para calcular a caixa
+        local headPos = head.Position
+        local rootPos = rootPart.Position
+        
+        -- Calcular altura total do personagem (dos pés à cabeça)
+        local footPos = rootPos - Vector3.new(0, 2, 0) -- Aproximadamente a posição dos pés
+        local topPos = headPos + Vector3.new(0, 0.5, 0) -- Um pouco acima da cabeça
+        
+        -- Converter para posição na tela
+        local topPoint, topVisible = camera:WorldToViewportPoint(topPos)
+        local footPoint, footVisible = camera:WorldToViewportPoint(footPos)
+        
+        if not topVisible and not footVisible then
+            if box2DObjects[player] then
+                for _, obj in pairs(box2DObjects[player]) do
+                    if obj then obj.Visible = false end
+                end
+            end
+            return
+        end
+        
+        -- Calcular tamanho da caixa na tela (baseado na altura do personagem)
+        local boxHeight = math.abs(topPoint.Y - footPoint.Y)
+        local boxWidth = boxHeight * 0.5 -- Proporção largura/altura
+        
+        -- Posição central da caixa (horizontalmente centralizada no personagem)
+        local centerX = topPoint.X
+        
+        -- Calcular os 4 cantos da caixa
+        local left = centerX - boxWidth/2
+        local right = centerX + boxWidth/2
+        local top = topPoint.Y - 5
+        local bottom = footPoint.Y + 5
+        
+        -- Definir cor atual (RGB para staff, cor escolhida para normais)
+        local currentColor = box2DColor
+        if isStaffPlayer then
+            currentColor = rainbowColors[colorIndex]
+        end
+        
+        -- Se não existir a caixa, criar as linhas
+        if not box2DObjects[player] then
+            box2DObjects[player] = {}
+            
+            -- Criar as 4 linhas da caixa
+            for i = 1, 4 do
+                local line = Drawing.new("Line")
+                line.Visible = true
+                line.Color = currentColor
+                line.Thickness = 2
+                line.Transparency = 1
+                table.insert(box2DObjects[player], line)
+            end
+            
+            -- Criar o nome do player
+            local nameText = Drawing.new("Text")
+            nameText.Visible = box2DShowName
+            nameText.Color = currentColor
+            nameText.Size = 16
+            nameText.Center = true
+            nameText.Outline = true
+            nameText.Font = 2
+            nameText.Text = player.Name .. (isStaffPlayer and " [STAFF]" or "")
+            table.insert(box2DObjects[player], nameText)
+            
+            -- Criar texto de distância
+            local distText = Drawing.new("Text")
+            distText.Visible = true
+            distText.Color = Color3.fromRGB(255, 255, 255)
+            distText.Size = 12
+            distText.Center = true
+            distText.Outline = true
+            distText.Font = 2
+            table.insert(box2DObjects[player], distText)
+        end
+        
+        -- Atualizar posição e cor das linhas
+        if box2DObjects[player] then
+            -- Linha superior
+            local line1 = box2DObjects[player][1]
+            line1.From = Vector2.new(left, top)
+            line1.To = Vector2.new(right, top)
+            line1.Color = currentColor
+            line1.Visible = true
+            
+            -- Linha direita
+            local line2 = box2DObjects[player][2]
+            line2.From = Vector2.new(right, top)
+            line2.To = Vector2.new(right, bottom)
+            line2.Color = currentColor
+            line2.Visible = true
+            
+            -- Linha inferior
+            local line3 = box2DObjects[player][3]
+            line3.From = Vector2.new(right, bottom)
+            line3.To = Vector2.new(left, bottom)
+            line3.Color = currentColor
+            line3.Visible = true
+            
+            -- Linha esquerda
+            local line4 = box2DObjects[player][4]
+            line4.From = Vector2.new(left, bottom)
+            line4.To = Vector2.new(left, top)
+            line4.Color = currentColor
+            line4.Visible = true
+            
+            -- Nome do player
+            local nameText = box2DObjects[player][5]
+            if nameText then
+                nameText.Visible = box2DShowName
+                nameText.Color = currentColor
+                nameText.Position = Vector2.new(centerX, top - 18)
+                nameText.Text = player.Name .. (isStaffPlayer and " [STAFF]" or "")
+            end
+            
+            -- Distância
+            local distText = box2DObjects[player][6]
+            if distText then
+                local distance = (camera.CFrame.Position - rootPos).Magnitude
+                distText.Position = Vector2.new(centerX, bottom + 16)
+                distText.Text = string.format("%.1f m", distance)
+            end
+        end
+    end
+    
+    -- Criar conexão para atualizar a caixa
+    local connection = game:GetService("RunService").RenderStepped:Connect(updateBox)
+    table.insert(box2DConnections, {
+        player = player,
+        connection = connection
+    })
+end
+
+-- Toggle da Caixinha 2D
+local box2DToggle = VisualTab:CreateToggle({
+    Name = "📦 Ativar Caixinha 2D (ESP Box)",
+    CurrentValue = false,
+    Flag = "Box2DToggle",
+    Callback = function(Value)
+        box2DEnabled = Value
+        
+        if Value then
+            -- Limpar objetos existentes
+            for player, objects in pairs(box2DObjects) do
+                for _, obj in ipairs(objects) do
+                    if obj then obj:Destroy() end
+                end
+            end
+            box2DObjects = {}
+            
+            -- Criar caixas para todos os players
+            for _, player in ipairs(game.Players:GetPlayers()) do
+                if player ~= game.Players.LocalPlayer then
+                    createBox2D(player)
+                end
+            end
+            
+            -- Conectar eventos de player adicionado/removido
+            table.insert(box2DConnections, {
+                type = "playerAdded",
+                connection = game.Players.PlayerAdded:Connect(function(newPlayer)
+                    task.wait(0.5)
+                    if box2DEnabled then
+                        createBox2D(newPlayer)
+                    end
+                end)
+            })
+            
+            table.insert(box2DConnections, {
+                type = "playerRemoving",
+                connection = game.Players.PlayerRemoving:Connect(function(leavingPlayer)
+                    if box2DObjects[leavingPlayer] then
+                        for _, obj in ipairs(box2DObjects[leavingPlayer]) do
+                            if obj then obj:Destroy() end
+                        end
+                        box2DObjects[leavingPlayer] = nil
+                    end
+                end)
+            })
+            
+            Lunaris:Notify({
+                Title = "📦 Caixinha 2D",
+                Content = "Caixinha 2D ativada! STAFF ficam RGB",
+                Duration = 3,
+                Image = "box"
+            })
+        else
+            -- Remover todas as caixas
+            for player, objects in pairs(box2DObjects) do
+                for _, obj in ipairs(objects) do
+                    if obj then obj:Destroy() end
+                end
+            end
+            box2DObjects = {}
+            
+            -- Desconectar todas as conexões
+            for _, data in ipairs(box2DConnections) do
+                if data.connection then
+                    data.connection:Disconnect()
+                end
+            end
+            box2DConnections = {}
+            
+            Lunaris:Notify({
+                Title = "📦 Caixinha 2D",
+                Content = "Caixinha 2D desativada",
+                Duration = 2,
+                Image = "box"
+            })
+        end
+    end
+})
+
+-- Cor da Caixinha 2D (para players normais)
+VisualTab:CreateColorPicker({
+    Name = "🎨 Cor da Caixinha (Players Normais)",
+    Color = Color3.fromRGB(180, 130, 255),
+    Flag = "Box2DColor",
+    Callback = function(Value)
+        box2DColor = Value
+        
+        -- Atualizar cor de todas as caixas de players normais
+        for player, objects in pairs(box2DObjects) do
+            if not isStaff(player) then
+                for _, obj in ipairs(objects) do
+                    if obj and obj:IsA("Drawing") then
+                        if obj.Type == "Line" or (obj.Type == "Text" and obj ~= objects[6]) then
+                            obj.Color = Value
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+-- Toggle para mostrar nome
+VisualTab:CreateToggle({
+    Name = "📝 Mostrar Nome do Player",
+    CurrentValue = true,
+    Flag = "Box2DShowName",
+    Callback = function(Value)
+        box2DShowName = Value
+        
+        -- Atualizar visibilidade dos nomes
+        for player, objects in pairs(box2DObjects) do
+            if objects[5] then
+                objects[5].Visible = Value
+            end
+        end
+    end
+})
+
+-- Texto explicativo
+VisualTab:CreateParagraph({
+    Title = "ℹ️ Sobre a Caixinha 2D",
+    Content = "✓ Caixa no corpo INTEIRO do jogador\n✓ Tamanho ajusta automaticamente\n✓ STAFF ficam com caixinha RGB piscante\n✓ Mostra nome e distância\n✓ Personalize a cor dos players normais\n✓ Funciona através das paredes"
+})
+
+VisualTab:CreateDivider()
+
+-- ============================================
+-- ABA VISUAL - ESP STAFF
+-- ============================================
+local StaffESPSection = VisualTab:CreateSection("👮 ESP Staff")
 
 -- Staff ESP Toggle
 local staffEspToggle = VisualTab:CreateToggle({
-    Name = "🌈 Ativar ESP Staff PISCANTE",
+    Name = "👮 Ativar ESP Staff",
     CurrentValue = false,
     Flag = "StaffESPToggle",
     Callback = function(Value)
@@ -693,10 +1056,10 @@ local staffEspToggle = VisualTab:CreateToggle({
         if Value then
             startStaffESP()
             Lunaris:Notify({
-                Title = "🌈 Staff ESP",
-                Content = "ESP Staff PISCANTE ativado!",
+                Title = "👮 ESP Staff",
+                Content = "ESP Staff ativado!",
                 Duration = 4,
-                Image = "rainbow"
+                Image = "users"
             })
         else
             stopStaffESP()
@@ -763,7 +1126,7 @@ MiscTab:CreateButton({
 -- ============================================
 CreditsTab:CreateParagraph({
     Title = "✨ Lunaris Hub",
-    Content = "Versão 15.0 - AIMBOT 4D PERFEITO!\n• Speed: 0-15 studs extra\n• Aimbot Supremo: Força 1-10 (TRAVA!)\n• Aimbot 4D RÁPIDO:\n   • PUUXA FORTE na cabeça (0.7)\n   • Velocidade: 4.0 (RÁPIDO)\n   • Amplitude: 1.5 studs\n   • Cabeça → Direita → Cabeça → Esquerda → Cabeça\n• ESP Staff Piscante\n• Noclip e muito mais!"
+    Content = "Versão 15.0 - AIMBOT 4D + CAIXINHA 2D!\n• Speed: 0-15 studs extra\n• Aimbot Supremo: Força 1-10 (TRAVA!)\n• Aimbot 4D RÁPIDO\n• Caixinha 2D no corpo INTEIRO\n• STAFF ficam com caixinha RGB\n• ESP Staff (linhas para STAFF)\n• Noclip e muito mais!"
 })
 
 -- ============================================
@@ -885,16 +1248,15 @@ function startAimbotWorking()
     end)
 end
 
--- AIMBOT 4D - VAI E VEM RÁPIDO (PUUXA FORTE NA CABEÇA)
+-- AIMBOT 4D - VAI E VEM RÁPIDO
 function startAimbot4D()
     aimbot4DTime = 0
-    local movementSpeed = 4.0 -- Velocidade RÁPIDA do movimento
-    local movementAmplitude = 1.5 -- Amplitude maior (1.5 studs)
+    local movementSpeed = 4.0
+    local movementAmplitude = 1.5
     
     aimbot4DConnection = game:GetService("RunService").RenderStepped:Connect(function(dt)
         if not aimbot4DEnabled then return end
         
-        -- Atualizar tempo RÁPIDO
         aimbot4DTime = aimbot4DTime + dt * movementSpeed
         
         local player = game.Players.LocalPlayer
@@ -905,7 +1267,6 @@ function startAimbot4D()
         local targetHead = nil
         local targetPos = nil
         
-        -- Verificar se tem algum player (DIFERENTE DE VOCÊ) dentro do FOV
         for _, target in pairs(game.Players:GetPlayers()) do
             if target ~= player and target.Character then
                 local head = target.Character:FindFirstChild("Head")
@@ -928,42 +1289,20 @@ function startAimbot4D()
             end
         end
         
-        -- SE TEM ALVO NO FOV: PUUXA FORTE NA CABEÇA + VAI E VEM
         if targetInFov and targetHead and targetPos then
             local cameraPos = camera.CFrame.Position
-            
-            -- Calcular vetor direito da câmera
             local targetRight = camera.CFrame.RightVector
-            
-            -- CRIAR MOVIMENTO DE VAI E VEM RÁPIDO
             local offsetAmount = math.sin(aimbot4DTime) * movementAmplitude
-            
-            -- CICLO DO MOVIMENTO:
-            -- t=0:    offset=0    → NA CABEÇA
-            -- t=0.25: offset=1.5  → FORA (direita)
-            -- t=0.5:  offset=0    → NA CABEÇA
-            -- t=0.75: offset=-1.5 → FORA (esquerda)
-            -- t=1.0:  offset=0    → NA CABEÇA (repete)
-            
-            -- POSIÇÃO ALVO: cabeça + offset horizontal
             local targetPosWithOffset = targetPos + (targetRight * offsetAmount)
-            
-            -- Calcular direção para o alvo
             local targetCFrame = CFrame.lookAt(cameraPos, targetPosWithOffset)
+            local smoothness = 0.7
             
-            -- PUUXA FORTE: 0.7 de força (quase travado na cabeça)
-            local smoothness = 0.7 -- Isso faz PUUXAR FORTE na cabeça
-            
-            -- Aplicar o movimento FORTE
             camera.CFrame = camera.CFrame:Lerp(targetCFrame, smoothness)
-            
-        else
-            -- SE NÃO TEM ALVO: NÃO FAZ NADA (câmera normal)
         end
     end)
 end
 
--- ESP
+-- ESP (linhas)
 function startESP()
     local player = game.Players.LocalPlayer
     
@@ -1045,7 +1384,7 @@ function stopESP()
     espLines = {}
 end
 
--- Staff ESP Piscante
+-- ESP Staff
 function startStaffESP()
     local player = game.Players.LocalPlayer
     
@@ -1061,18 +1400,8 @@ function startStaffESP()
         Color3.fromRGB(255, 0, 255)
     }
     
-    local function isStaffByName(targetPlayer)
-        if targetPlayer.Name and string.find(targetPlayer.Name:upper(), "STAFF") then
-            return true
-        end
-        if targetPlayer.DisplayName and string.find(targetPlayer.DisplayName:upper(), "STAFF") then
-            return true
-        end
-        return false
-    end
-    
     local function createStaffLine(targetPlayer)
-        if targetPlayer == player or not isStaffByName(targetPlayer) then return end
+        if targetPlayer == player or not isStaff(targetPlayer) then return end
         
         local line = Drawing.new("Line")
         line.Visible = true
@@ -1091,7 +1420,7 @@ function startStaffESP()
                 return
             end
             
-            if not isStaffByName(targetPlayer) then
+            if not isStaff(targetPlayer) then
                 line.Visible = false
                 return
             end
@@ -1176,7 +1505,7 @@ setupMinimizeButton()
 print("✨ Lunaris Hub carregado com sucesso!")
 Lunaris:Notify({
     Title = "✨ Lunaris Hub ✨",
-    Content = "Menu carregado! Pressione K\nVersão 15.0 - AIMBOT 4D PERFEITO! 🚀",
+    Content = "Menu carregado! Pressione K\nVersão 15.0 - AIMBOT 4D + CAIXINHA 2D RGB STAFF! 🚀",
     Duration = 5,
     Image = "sparkles"
 })
